@@ -1,3 +1,10 @@
+const MODELOS = [
+  process.env.GEMINI_MODEL,
+  'gemini-3.8-flash',
+  'gemini-flash-latest',
+  'gemini-2.5-flash'
+].filter(Boolean);
+
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
@@ -19,26 +26,33 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'GEMINI_API_KEY não configurada na Vercel.' });
   }
 
-  try {
-    const prompt = `Crie uma copy de marketing persuasiva para ${canal} sobre o produto ${produto.nome}, cujo benefício é ${produto.beneficio || produto.descricao}. Inclua emojis e CTA para ${produto.whatsapp || 'WhatsApp'}.`;
+  const prompt = `Crie uma copy de marketing persuasiva para ${canal} sobre o produto ${produto.nome}, cujo benefício é ${produto.beneficio || produto.descricao}. Inclua emojis e CTA para ${produto.whatsapp || 'WhatsApp'}.`;
+  let ultimoErro = 'Erro desconhecido';
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
+  for (const modelo of MODELOS) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      const data = await response.json();
 
-    const data = await response.json();
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'Erro na API Gemini' });
+      if (!response.ok) {
+        ultimoErro = `[${modelo}] ` + (data.error?.message || 'Erro na API Gemini');
+        if (response.status === 404 || response.status === 429 || response.status >= 500) continue;
+        return res.status(response.status).json({ error: ultimoErro });
+      }
+
+      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!texto) {
+        ultimoErro = `[${modelo}] A IA não devolveu texto.`;
+        continue;
+      }
+      return res.status(200).json({ texto, modelo });
+    } catch (err) {
+      ultimoErro = `[${modelo}] ${err.message}`;
     }
-
-    const texto = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!texto) {
-      return res.status(502).json({ error: 'A IA não devolveu texto.' });
-    }
-    return res.status(200).json({ texto });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
   }
+  return res.status(502).json({ error: ultimoErro });
 };
