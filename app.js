@@ -25,32 +25,25 @@ async function gerarCopy(canal) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ produto, canal })
     });
-
     const responseText = await response.text();
     let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      throw new Error("Resposta inválida do servidor.");
-    }
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Erro na geração.');
-    }
+    try { data = JSON.parse(responseText); }
+    catch (e) { throw new Error("Resposta inválida do servidor."); }
+    if (!response.ok) throw new Error(data.error || 'Erro na geração.');
     textoFinal = data.texto;
   } catch (err) {
-    textoFinal = `🔥 *${produto.nome.toUpperCase()}* 🔥\n\n` +
-                 `💡 O que resolve: ${produto.problema || produto.descricao}\n` +
-                 `🎯 Para quem é: ${produto.publico}\n` +
-                 `✨ Benefício principal: ${produto.beneficio}\n\n` +
-                 `🚀 Garanta já o seu por apenas R$ ${produto.preco}!\n` +
-                 `📲 Fale connosco no WhatsApp: wa.me/${produto.whatsapp}\n\n` +
+    console.error('gerarCopy:', err);
+    textoFinal = `🔥 *${String(produto.nome).toUpperCase()}* 🔥\n\n` +
+                 `💡 O que resolve: ${produto.problema || produto.descricao || ''}\n` +
+                 `🎯 Para quem é: ${produto.publico || ''}\n` +
+                 `✨ Benefício principal: ${produto.beneficio || ''}\n\n` +
+                 `🚀 Garanta já o seu por apenas R$ ${produto.preco || ''}!\n` +
+                 `📲 Fale connosco no WhatsApp: wa.me/${produto.whatsapp || ''}\n\n` +
                  `#${canal} #DivulgaAi #${String(produto.tipo || '').replace(/\s+/g, '')}`;
   }
 
   textoDiv.innerText = textoFinal;
   mockupDiv.innerText = textoFinal;
-
   const carateres = textoFinal.length;
   const palavras = textoFinal.trim().split(/\s+/).length;
   contador.innerText = `${carateres} carateres | ${palavras} palavras`;

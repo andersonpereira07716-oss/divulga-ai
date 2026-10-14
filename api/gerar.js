@@ -5,7 +5,11 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  const { produto, canal } = req.body || {};
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch (e) { body = {}; }
+  }
+  const { produto, canal } = body || {};
   if (!produto || !canal) {
     return res.status(400).json({ error: 'Dados incompletos.' });
   }
@@ -25,7 +29,6 @@ module.exports = async function handler(req, res) {
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       return res.status(response.status).json({ error: data.error?.message || 'Erro na API Gemini' });
     }
