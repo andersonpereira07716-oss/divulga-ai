@@ -1,0 +1,9 @@
+{
+  "appId": "com.divulgaai.app",
+  "appName": "Divulga AI",
+  "webDir": "www",
+  "server": {
+    "url": "https://divulga-ai-kappa.vercel.app",
+    "cleartext": false
+  }
+}
