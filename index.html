@@ -175,7 +175,7 @@
                         <div>
                             <label class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Selecione o Produto:</label>
                             <select id="select-produto" class="w-full bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 shadow-sm">
-                                ${produtos.map(p => `<option value="${p.id}">${p.nome} (${p.tipo})</option>`).join('')}
+                                ${produtos.map(p => `<option value="${p.id}">${p.tipo && !String(p.nome).toLowerCase().includes('(' + String(p.tipo).toLowerCase() + ')') ? p.nome + ' (' + p.tipo + ')' : p.nome}</option>`).join('')}
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-2">

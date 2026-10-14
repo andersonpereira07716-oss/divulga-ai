@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
   try { descobertos = await descobrirModelos(apiKey); } catch (e) {}
   const candidatos = [...new Set([process.env.GEMINI_MODEL, ...descobertos, ...FIXOS].filter(Boolean))].slice(0, 6);
 
-  const prompt = `Crie uma copy de marketing persuasiva para ${canal} sobre o produto ${produto.nome}, cujo benefício é ${produto.beneficio || produto.descricao}. Inclua emojis e CTA para ${produto.whatsapp || 'WhatsApp'}.`;
+  const prompt = `Escreva em português do Brasil uma copy de marketing persuasiva para ${canal} sobre o produto "${produto.nome}" (${produto.tipo || 'produto'}). Benefício: ${produto.beneficio || produto.descricao || 'não informado'}. Público: ${produto.publico || 'geral'}. Preço: R$ ${produto.preco || 'consulte'}. Inclua emojis e uma chamada para ação para o WhatsApp ${produto.whatsapp || ''}. Entregue apenas o texto final pronto para postar, sem introdução, sem comentários e sem placeholders entre colchetes.`;
   const erros = [];
 
   for (const modelo of candidatos) {
