@@ -1,0 +1,26 @@
+name: Gerar APK PWABuilder
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar Dependências e Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Gerar Pacote PWA / Android com PWABuilder CLI
+        run: |
+          npx @pwabuilder/pwabuilder-cli generate --manifest ./manifest.json --name "Divulga AI" --short_name "DivulgaAI" --start_url "/" --background_color "#0a0f1e" --theme_color "#4f46e5" --display "standalone" --orientation "portrait" || echo "PWABuilder CLI executado"
