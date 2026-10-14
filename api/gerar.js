@@ -1,4 +1,6 @@
 module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
   }
@@ -12,11 +14,11 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY não configurada nas variáveis de ambiente da Vercel.' });
+    return res.status(500).json({ error: 'GEMINI_API_KEY não configurada na Vercel.' });
   }
 
   try {
-    const prompt = `Crie uma copy de marketing persuasiva e focada em conversão para o canal "${canal}" baseada no produto "${produto.nome}": ${produto.descricao || ''}. Utilize emojis e uma estrutura profissional.`;
+    const prompt = `Crie uma copy de marketing persuasiva para ${canal} sobre o produto ${produto.nome}, cujo benefício é ${produto.beneficio || produto.descricao}. Inclua emojis e CTA para ${produto.whatsapp || 'WhatsApp'}.`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -29,7 +31,7 @@ module.exports = async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'Erro ao comunicar com a API do Gemini' });
+      return res.status(response.status).json({ error: data.error?.message || 'Erro na API Gemini' });
     }
 
     const texto = data.candidates[0].content.parts[0].text;
